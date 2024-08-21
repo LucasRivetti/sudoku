@@ -94,3 +94,10 @@ int main() {
 
     return 0;
 }
+
+
+//arruamr os zero para virar um '-';
+//botar o aviso no inicio do jogo sobre colocar zero para zerar o numero e virar '-';
+//verficar fian do jogo verificaçaõ todoas as rodadas a partir de todos os espaços completos;
+//mudar a cor (provavelmente);
+//colocar a aleatoriedade e as dificuldades;

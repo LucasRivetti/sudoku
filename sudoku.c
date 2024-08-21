@@ -19,15 +19,24 @@ void iniciarJogo(Jogador *jogador) {
     jogador->nome[strcspn(jogador->nome, "\n")] = '\0';
 }
 
+void constroiTabuleiro(int tabuleiro[9][9]) {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            tabuleiro[i][j] = '-';
+        }
+    }
+}
+
 void exibirTabuleiro(int tabuleiro[9][9]) {
     printf("\nTabuleiro atual:\n");
-  for (int A = 0; A < 9; A++) {
+    for (int A = 0; A < 9; A++) {
         printf ("____");
     }
     for (int i = 0; i < 9; i++) {
         printf ("\n|");
         for (int j = 0; j < 9; j++) {
-            printf (" %d |",tabuleiro[i][j]);
+            if (tabuleiro[i][j] != '-') printf (" %d |",tabuleiro[i][j]);
+            else printf(" %c |", tabuleiro[i][j]);
         }
         printf ("\n|");
         for (int B = 0; B < 9; B++) {
@@ -66,11 +75,11 @@ void jogar(int tabuleiro[9][9]) {
 int main() {
     Jogador jogador;
     time_t tempoInicio, tempoFim;
-    int tabuleiro[9][9] = {0}; //por enquanto vazio para teste
+    int tabuleiro[9][9];//por enquanto vazio para teste
 
     iniciarJogo(&jogador);
     time(&tempoInicio);
-
+    constroiTabuleiro(tabuleiro);
 
     for (int i = 0; i < 5; i++) { // 5 jogos para teste
         exibirTabuleiro(tabuleiro);

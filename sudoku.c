@@ -17,6 +17,11 @@ void iniciarJogo(Jogador *jogador) {
     printf("Digite seu nome: ");
     fgets(jogador->nome, 30, stdin);
     jogador->nome[strcspn(jogador->nome, "\n")] = '\0';
+
+    printf("\nDicas:\n");
+    printf("- Insira '0' como valor para apagar um número e deixar a célula vazia.\n");
+    printf("- Linhas, colunas e valores devem estar entre 1 e 9.\n\n");
+
 }
 
 void constroiTabuleiro(int tabuleiro[9][9]) {
@@ -48,7 +53,7 @@ void exibirTabuleiro(int tabuleiro[9][9]) {
 
 int validarEntrada(int linha, int coluna, int valor) {
 
-    if (linha < 1 || linha > 9 || coluna < 1 || coluna > 9 || valor < 1 || valor > 9) {
+    if (linha < 1 || linha > 9 || coluna < 1 || coluna > 9 || valor < 0 || valor > 9) {
         printf("Entrada inválida! Linhas, colunas e valores devem estar entre 1 e 9.\n");
         return 0;
     }
@@ -61,11 +66,16 @@ void jogar(int tabuleiro[9][9]) {
     scanf("%d", &linha);
     printf("Digite a coluna de 1 a 9:\n");
     scanf("%d", &coluna);
-    printf("Digite o valor de 1 a 9:\n");
+    printf("Digite o valor de 1 a 9 ou 0 para apagar:\n");
     scanf("%d", &valor);
 
-     if (validarEntrada(linha, coluna, valor)) {
-        tabuleiro[linha-1][coluna-1] = valor; // Atualiza o tabuleiro (ajustando para índice 0)
+   if (validarEntrada(linha, coluna, valor)) {
+        if (valor == 0) {
+            tabuleiro[linha - 1][coluna - 1] = '-'; // Zera a célula para '-'
+            printf("Número removido!\n");
+        } else {
+            tabuleiro[linha - 1][coluna - 1] = valor; // Atualiza o tabuleiro com o valor inserido
+        }
     } else {
         printf("Tente novamente!\n");
     }
@@ -100,4 +110,4 @@ int main() {
 //botar o aviso no inicio do jogo sobre colocar zero para zerar o numero e virar '-';
 //verficar fian do jogo verificaçaõ todoas as rodadas a partir de todos os espaços completos;
 //mudar a cor (provavelmente);
-//colocar a aleatoriedade e as dificuldades;
+//colocar a aleatoriedade e as dificuldades;cv 

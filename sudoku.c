@@ -6,7 +6,6 @@
 #define BLUE   "\x1b[34m"
 #define RESET  "\x1b[0m"
 
-
 typedef struct {
     char nome[30];
     double tempoGasto;
@@ -29,10 +28,11 @@ void iniciarJogo(Jogador *jogador) {
 }
 
 // Função para construir o tabuleiro vazio
-void constroiTabuleiro(int tabuleiro[9][9]) {
+void constroiTabuleiro(int tabuleiro[9][9], int fixos[9][9]) {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
             tabuleiro[i][j] = 0; // Inicializa todas as células como 0
+            fixos[i][j] = 0;     // Inicializa todas as células fixas como 0
         }
     }
 }
@@ -74,8 +74,7 @@ int posicaoValida(int tabuleiro[9][9], int linha, int coluna, int valor) {
            verificarQuadrante(tabuleiro, linha, coluna, valor);
 }
 
-
-void preencherTabuleiroInicial(int tabuleiro[9][9], int casasPreenchidas) {
+void preencherTabuleiroInicial(int tabuleiro[9][9], int fixos[9][9], int casasPreenchidas) {
     srand(time(NULL)); // Inicializa o gerador de números aleatórios
     int preenchidas = 0;
 
@@ -87,7 +86,8 @@ void preencherTabuleiroInicial(int tabuleiro[9][9], int casasPreenchidas) {
         // Verifica se a célula está vazia e se o valor é válido
         if (tabuleiro[linha][coluna] == 0 && posicaoValida(tabuleiro, linha, coluna, valor)) {
             tabuleiro[linha][coluna] = valor;
-            preenchidas++; // vai preenchendo aleatoriamente ate chegar no valor estipulado pelas dificuldades.
+            fixos[linha][coluna] = 1; // Marca a célula como fixa
+            preenchidas++; // vai preenchendo aleatoriamente até chegar no valor estipulado pelas dificuldades.
         }
     }
 }
@@ -118,7 +118,7 @@ void escolherDificuldade(int *casasPreenchidas) {
     }
 }
 
-void exibirTabuleiro(int tabuleiro[9][9]) {
+void exibirTabuleiro(int tabuleiro[9][9], int fixos[9][9]) {
     printf("\nTabuleiro atual:\n");
 
     for (int i = 0; i < 9; i++) {
@@ -129,7 +129,11 @@ void exibirTabuleiro(int tabuleiro[9][9]) {
         printf(BLUE "\n|" RESET);
         for (int j = 0; j < 9; j++) {
             if (tabuleiro[i][j] != 0) {
-                printf(" %d ", tabuleiro[i][j]);
+                if (fixos[i][j]) {
+                    printf(BLUE " %d " RESET, tabuleiro[i][j]);
+                } else {
+                    printf(" %d ", tabuleiro[i][j]);
+                }
             } else {
                 printf("   ");
             }
@@ -161,7 +165,6 @@ void exibirTabuleiro(int tabuleiro[9][9]) {
     printf("\n");
 }
 
-
 int validarEntrada(int linha, int coluna, int valor) {
     if (linha < 1 || linha > 9 || coluna < 1 || coluna > 9 || valor < 0 || valor > 9) {
         printf("Entrada inválida! Linhas, colunas e valores devem estar entre 1 e 9.\n");
@@ -170,8 +173,8 @@ int validarEntrada(int linha, int coluna, int valor) {
     return 1;
 }
 
-//aqui o usuario se diverte
-void jogar(int tabuleiro[9][9]) {
+// Aqui o usuário se diverte
+void jogar(int tabuleiro[9][9], int fixos[9][9]) {
     int linha, coluna, valor;
     printf("Digite a linha (1 a 9): ");
     scanf("%d", &linha);
@@ -180,16 +183,16 @@ void jogar(int tabuleiro[9][9]) {
     printf("Digite o valor (1 a 9) ou 0 para apagar: ");
     scanf("%d", &valor);
 
-    if (validarEntrada(linha, coluna, valor)) {//aqui o tabuleiro atualiza de acordo com as entradas do usuario
-        if (valor == 0) {
-            tabuleiro[linha - 1][coluna - 1] = 0; // Zera a célula para 0
-            printf("Número removido!\n");
+    if (validarEntrada(linha, coluna, valor)) { // Atualiza o tabuleiro de acordo com as entradas do usuário
+        if (fixos[linha - 1][coluna - 1]) {
+            printf("Não é permitido modificar números fixos!\n");
         } else {
-            // Atualiza o tabuleiro após validação
-            if (posicaoValida(tabuleiro, linha - 1, coluna - 1, valor)) {
-                tabuleiro[linha - 1][coluna - 1] = valor;
+            if (valor == 0) {
+                tabuleiro[linha - 1][coluna - 1] = 0; // Zera a célula para 0
+                printf("Número removido!\n");
             } else {
-                printf("Número inválido para a posição!\n");
+                // Atualiza o tabuleiro sem validação para regras
+                tabuleiro[linha - 1][coluna - 1] = valor;
             }
         }
     } else {
@@ -197,27 +200,28 @@ void jogar(int tabuleiro[9][9]) {
     }
 }
 
-int main() {  // Aqui é onde toda a mágica acontece na sua telinha do terminal.
+int main() { // Aqui é onde toda a mágica acontece na sua telinha do terminal.
     Jogador jogador;
     time_t tempoInicio, tempoFim;
     int tabuleiro[9][9]; // Tabuleiro vazio para teste
+    int fixos[9][9]; // Células fixas
     int casasPreenchidas;
 
     iniciarJogo(&jogador);
     escolherDificuldade(&casasPreenchidas);
     time(&tempoInicio);
-    constroiTabuleiro(tabuleiro);
-    preencherTabuleiroInicial(tabuleiro, casasPreenchidas);
+    constroiTabuleiro(tabuleiro, fixos);
+    preencherTabuleiroInicial(tabuleiro, fixos, casasPreenchidas);
 
     for (int i = 0; i < 5; i++) { // 5 jogadas para teste
-        exibirTabuleiro(tabuleiro);
-        jogar(tabuleiro);
+        exibirTabuleiro(tabuleiro, fixos);
+        jogar(tabuleiro, fixos);
     }
 
     time(&tempoFim);
     jogador.tempoGasto = difftime(tempoFim, tempoInicio);
 
-    exibirTabuleiro(tabuleiro);
+    exibirTabuleiro(tabuleiro, fixos);
     printf("\nTempo gasto: %.2f segundos\n", jogador.tempoGasto);
 
     return 0;

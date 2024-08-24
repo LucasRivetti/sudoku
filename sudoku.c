@@ -3,6 +3,10 @@
 #include <time.h>
 #include <string.h>
 
+#define BLUE   "\x1b[34m"
+#define RESET  "\x1b[0m"
+
+
 typedef struct {
     char nome[30];
     double tempoGasto;
@@ -111,23 +115,44 @@ void escolherDificuldade(int *casasPreenchidas) {
     }
 }
 
-void exibirTabuleiro(int tabuleiro[9][9]) { //aqui sera montado a estrutura do tabuleiro
+void exibirTabuleiro(char tabuleiro[9][9]) {
     printf("\nTabuleiro atual:\n");
-    for (int A = 0; A < 9; A++) {
-        printf("____");
-    }
+
     for (int i = 0; i < 9; i++) {
-        printf("\n|");
+        printf(BLUE "____" RESET);
+    }
+
+    for (int i = 0; i < 9; i++) {
+        printf(BLUE "\n|" RESET);
         for (int j = 0; j < 9; j++) {
             if (tabuleiro[i][j] != '-') {
-                printf(" %d |", tabuleiro[i][j]);
+                printf(" %c ", tabuleiro[i][j]);
             } else {
-                printf(" %c |", tabuleiro[i][j]);
+                printf("   ");
+            }
+            if ((j - 2) % 3 == 0 || j == 8) {
+                printf(BLUE "|" RESET);
+            } else {
+                printf("|");
             }
         }
-        printf("\n|");
-        for (int B = 0; B < 9; B++) {
-            printf("___|");
+        printf(BLUE "\n|" RESET);
+        for (int j = 0; j < 9; j++) {
+            if ((i + 1) % 3 == 0 || i == 8) {
+                printf(BLUE "___" RESET);
+                if ((j + 1) % 3 == 0 || j == 8) {
+                    printf(BLUE "|" RESET);
+                } else {
+                    printf("|");
+                }
+            } else {
+                printf("___");
+                if ((j + 1) % 3 == 0 || j == 8) {
+                    printf(BLUE "|" RESET);
+                } else {
+                    printf("|");
+                }
+            }
         }
     }
     printf("\n");

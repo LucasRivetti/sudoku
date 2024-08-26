@@ -243,7 +243,7 @@ void decisaoFinal (int tabuleiro[9][9], int fixos[9][9]) { // Interação com us
     int decisao;
     printf ("\nVoce preencheu todas as casas! Escolha o proximo caminho:\n");
     printf ("1. Conferir tabuleiro e finalizar o jogo\n");
-    printf ("2. Ter mais 5 jogadas extras antes de conferir\n");
+    printf ("2. Ter mais 10 jogadas extras antes de conferir\n");
     printf ("Digite sua escolha (1-2): ");
     scanf ("%d", &decisao);
     switch (decisao) {
@@ -359,20 +359,14 @@ int main() { // Aqui é onde toda a mágica acontece na sua telinha do terminal.
     if (verificarTabuleiro(tabuleiro) == 1) {
         printf("\nParabéns %s Você completou corretamente o desafio do sudoku!!\n", jogador.nome);
         printf("Tempo gasto: %.2f segundos\n", jogador.tempoGasto);
+        
+        salvarTop3Jogadores(jogador);
+        exibirLeaderboard();
     } else {
         printf("\nSeu jogo nao esta correto.\n");
         printf("Tempo gasto: %.2f segundos\n", jogador.tempoGasto);
+    
     }
-
-    salvarTop3Jogadores(jogador);
-    exibirLeaderboard();
 
     return 0;
 }
-
-
-//Mudanças:
-// Nova formatação da matriz;
-// Aumento no número de tentativas após finalização dos espaços (5 para 10 tentativas);
-// Alteração na mensagem final ao usuário, dependendo de seu desempenho no jogo;
-// Retirada de mensagens printf na void decisaoFinal;

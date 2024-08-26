@@ -200,6 +200,59 @@ void jogar(int tabuleiro[9][9], int fixos[9][9]) {
     }
 }
 
+void salvarTop3Jogadores(Jogador jogador) {
+    Jogador top3[3];
+    FILE *arquivo = fopen("Top3Jogadores.txt", "r");
+
+    for (int i = 0; i < 3; i++) { //inicialização dos valores
+        strcpy(top3[i].nome, "...");
+        top3[i].tempoGasto = 999999999;
+    }
+
+    if (arquivo != NULL) {
+        for (int i = 0; i < 3; i++) {
+            fscanf(arquivo, "%s %lf", top3[i].nome, &top3[i].tempoGasto);
+        }
+        fclose(arquivo);
+    }
+
+    // jogador deve ser incluido na classificação caso o tempo seja melhor
+    for (int i = 0; i < 3; i++) {
+        if (jogador.tempoGasto < top3[i].tempoGasto) {
+            // se for melhor que um ja presente, passa esse jogador para baixo no ranking.
+            for (int j = 2; j > i; j--) {
+                top3[j] = top3[j - 1];
+            }
+            top3[i] = jogador;
+            break;
+        }
+    }
+
+    // salvamento do arquivo
+    arquivo = fopen("Top3Jogadores.txt", "w");
+    for (int i = 0; i < 3; i++) {
+        fprintf(arquivo, "%s %.2f\n", top3[i].nome, top3[i].tempoGasto);
+    }
+    fclose(arquivo);
+}
+
+void exibirLeaderboard() {
+    Jogador top3[3];
+    FILE *arquivo = fopen("Top3Jogadores.txt", "r");
+    printf("\n***********************************\n");
+    printf("***Leaderboard - Top 3 Jogadores***\n");
+    printf("***********************************\n");
+    if (arquivo == NULL) {
+        printf("Nenhum recorde disponível ainda.\n");
+    } else {
+        for (int i = 0; i < 3; i++) {
+            fscanf(arquivo, "%s %lf", top3[i].nome, &top3[i].tempoGasto);
+            printf("%d. %s - Tempo: %.2f segundos\n", i + 1, top3[i].nome, top3[i].tempoGasto);
+        }
+        fclose(arquivo);
+    }
+}
+
 int main() { // Aqui é onde toda a mágica acontece na sua telinha do terminal.
     Jogador jogador;
     time_t tempoInicio, tempoFim;
@@ -223,6 +276,9 @@ int main() { // Aqui é onde toda a mágica acontece na sua telinha do terminal.
 
     exibirTabuleiro(tabuleiro, fixos);
     printf("\nTempo gasto: %.2f segundos\n", jogador.tempoGasto);
+
+    salvarTop3Jogadores(jogador);
+    exibirLeaderboard();
 
     return 0;
 }

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string.h>
 
+#define RED    "\x1b[31m"
 #define BLUE   "\x1b[34m"
 #define RESET  "\x1b[0m"
 
@@ -92,13 +93,14 @@ void preencherTabuleiroInicial(int tabuleiro[9][9], int fixos[9][9], int casasPr
     }
 }
 
-void escolherDificuldade(int *casasPreenchidas) {
+int escolherDificuldade(int *casasPreenchidas) {
     int escolha;
     printf("Escolha a dificuldade:\n");
     printf("1. Fácil (30 casas preenchidas)\n");
     printf("2. Médio (22 casas preenchidas)\n");
     printf("3. Difícil (17 casas preenchidas)\n");
-    printf("Digite a sua escolha (1-3): ");
+    printf("4. Jogos Pré-Definidos\n");
+    printf("Digite a sua escolha (1-4): ");
     scanf("%d", &escolha);
 
     switch (escolha) {
@@ -111,26 +113,93 @@ void escolherDificuldade(int *casasPreenchidas) {
         case 3:
             *casasPreenchidas = 17;
             break;
+        case 4:
+            return 1;
+            break;
         default:
             printf("Escolha inválida! Nível 'Fácil' selecionado por padrão.\n");
             *casasPreenchidas = 30;
             break;
     }
+    return 0;
+}
+
+// Função que escolhe um tabuleiro já definido anteriormente
+void lerTabuleiroDeArquivo(const char *nomeArquivo, int tabuleiro[9][9], int fixos[9][9]) {
+    FILE *arquivo = fopen(nomeArquivo, "r");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo: %s\n", nomeArquivo);
+        return;
+    }
+
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            fscanf(arquivo, "%d", &tabuleiro[i][j]);
+            if (tabuleiro[i][j] != 0) {
+                fixos[i][j] = 1; // Marca a célula como fixa
+            } else {
+                fixos[i][j] = 0;
+            }
+        }
+    }
+
+    fclose(arquivo);
+}
+
+void escolherTabuleiroPreDefinido(int tabuleiro[9][9], int fixos[9][9]) {
+    int escolha;
+    printf("Escolha um tabuleiro:\n");
+    printf("1. Sudoku 1\n");
+    printf("2. Sudoku 2\n");
+    printf("3. Sudoku 3\n");
+    printf("Digite a sua escolha (1-3): ");
+    scanf("%d", &escolha);
+
+    switch (escolha) {
+        case 1:
+            lerTabuleiroDeArquivo("sudoku1.txt", tabuleiro, fixos);
+            break;
+        case 2:
+            lerTabuleiroDeArquivo("sudoku2.txt", tabuleiro, fixos);
+            break;
+        case 3:
+            lerTabuleiroDeArquivo("sudoku3.txt", tabuleiro, fixos);
+            break;
+        default:
+            printf("Escolha inválida! 'Sudoku 1' selecionado por padrão.\n");
+            lerTabuleiroDeArquivo("sudoku1.txt", tabuleiro, fixos);
+            break;
+    }
+
+    // Exibe o tabuleiro selecionado
+    printf("Tabuleiro selecionado:\n");
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            printf("%d ", tabuleiro[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 void exibirTabuleiro(int tabuleiro[9][9], int fixos[9][9]) {
     printf("\nTabuleiro atual:\n");
+    printf ("  ");
+    for (int i = 1; i <= 9; i++) {
+        printf ("  %d ", i);
+    }
+    printf ("\n   ");
 
     for (int i = 0; i < 9; i++) {
         printf(BLUE "____" RESET);
     }
 
     for (int i = 0; i < 9; i++) {
-        printf(BLUE "\n|" RESET);
+        printf("\n%d ", i + 1);
+        printf(BLUE "|" RESET);
         for (int j = 0; j < 9; j++) {
             if (tabuleiro[i][j] != 0) {
                 if (fixos[i][j]) {
-                    printf(BLUE " %d " RESET, tabuleiro[i][j]);
+                    printf(RED " %d " RESET, tabuleiro[i][j]);
                 } else {
                     printf(" %d ", tabuleiro[i][j]);
                 }
@@ -143,7 +212,7 @@ void exibirTabuleiro(int tabuleiro[9][9], int fixos[9][9]) {
                 printf("|");
             }
         }
-        printf(BLUE "\n|" RESET);
+        printf(BLUE "\n  |" RESET);
         for (int j = 0; j < 9; j++) {
             if ((i + 1) % 3 == 0 || i == 8) {
                 printf(BLUE "___" RESET);
@@ -226,40 +295,66 @@ int verificarTabuleiro(int tabuleiro[9][9]) { // Verificação final do tabuleir
             if (!verificarLinha(tabuleiro, i, j, valor) ||
                 !verificarColuna(tabuleiro, i, j, valor) ||
                 !verificarQuadrante(tabuleiro, i, j, valor)) {
-                printf("\nErro encontrado. Seu jogo nao esta correto.\n");
                 return 0;  // Tabuleiro incorreto
             }
         }
     }
-    printf ("\nParabens! Seu tabuleiro esta correto!\n");
     return 1;  // Tabuleiro está correto
 }
 
-void decisaoFinal (int tabuleiro[9][9], int fixos[9][9]) { // Interação com usuário para verificar tabuleiro
+void decisaoFinal(int tabuleiro[9][9], int fixos[9][9]) {
     int decisao;
-    printf ("\nVoce preencheu todas as casas! Escolha o proximo caminho:\n");
-    printf ("1. Conferir tabuleiro e finalizar o jogo\n");
-    printf ("2. Ter mais 5 jogadas extras antes de conferir\n");
-    printf ("Digite sua escolha (1-2): ");
-    scanf ("%d", &decisao);
+    printf("\nVocê preencheu todas as casas! Escolha o próximo caminho:\n");
+    printf("1. Conferir tabuleiro e finalizar o jogo\n");
+    printf("2. Ter mais 10 jogadas extras antes de conferir\n");
+    printf("Digite sua escolha (1-2): ");
+    scanf("%d", &decisao);
+
     switch (decisao) {
         case 1:
-            verificarTabuleiro(tabuleiro);
+            if (verificarTabuleiro(tabuleiro)) {
+                printf("\nParabéns! O tabuleiro está correto.\n");
+            } else {
+                printf("\nO tabuleiro está incorreto.\n");
+            }
             break;
-        case 2:
-            for (int i = 0; i < 5; i++) {
+        case 2: {
+            int jogadas = 0;
+            while (jogadas < 10) {
                 exibirTabuleiro(tabuleiro, fixos);
                 jogar(tabuleiro, fixos);
-            }
-            verificarTabuleiro(tabuleiro);
-            break;
-        default:
-            printf("Escolha inválida! Opcao 1 selecionado por padrão.\n");
-            verificarTabuleiro(tabuleiro);
-            break;
+                jogadas++;
 
+                if (jogadas < 10) {
+                    char continuar;
+                    printf("Você já fez %d jogadas, deseja continuar? (S/N): ", jogadas);
+                    getchar(); // Limpa o buffer antes de capturar a resposta pra evitar erros 
+                    scanf("%c", &continuar);
+
+                    if (continuar == 'N' || continuar == 'n') {
+                        break;
+                    }
+                }
+            }
+
+            if (verificarTabuleiro(tabuleiro)) {
+                printf("\nParabéns! O tabuleiro está correto.\n");
+            } else {
+                printf("\nO tabuleiro está incorreto.\n");
+            }
+            break;
+        }
+        default:
+            printf("Escolha inválida! Opção 1 selecionada por padrão.\n");
+            if (verificarTabuleiro(tabuleiro)) {
+                printf("\nParabéns! O tabuleiro está correto.\n");
+            } else {
+                printf("\nO tabuleiro está incorreto.\n");
+            }
+            break;
     }
 }
+
 
 void salvarTop3Jogadores(Jogador jogador) {
     Jogador top3[3];
@@ -315,35 +410,46 @@ void exibirLeaderboard() {
 }
 
 int main() { // Aqui é onde toda a mágica acontece na sua telinha do terminal.
-    Jogador jogador;
+  Jogador jogador;
     time_t tempoInicio, tempoFim;
-    int tabuleiro[9][9]; // Tabuleiro vazio para teste
-    int fixos[9][9]; // Células fixas
+    int tabuleiro[9][9];
+    int fixos[9][9];
     int casasPreenchidas;
 
     iniciarJogo(&jogador);
-    escolherDificuldade(&casasPreenchidas);
+    if (escolherDificuldade(&casasPreenchidas)) {
+        escolherTabuleiroPreDefinido(tabuleiro, fixos);
+    } else {        
+        constroiTabuleiro(tabuleiro, fixos);
+        preencherTabuleiroInicial(tabuleiro, fixos, casasPreenchidas);
+    }
+
     time(&tempoInicio);
-    constroiTabuleiro(tabuleiro, fixos);
-    preencherTabuleiroInicial(tabuleiro, fixos, casasPreenchidas);
 
-    while (!jogoAcabou(tabuleiro)) { // Loop enquanto o jogo não estiver completo
-    exibirTabuleiro(tabuleiro, fixos);
-    jogar(tabuleiro, fixos);
-}
-
-// Quando todas as casas estiverem preenchidas, perguntar o que o jogador deseja fazer
-decisaoFinal(tabuleiro, fixos);
+    while (!jogoAcabou(tabuleiro)) {
+        exibirTabuleiro(tabuleiro, fixos);
+        jogar(tabuleiro, fixos);
+    }
 
     time(&tempoFim);
+
     jogador.tempoGasto = difftime(tempoFim, tempoInicio);
 
-    exibirTabuleiro(tabuleiro, fixos);
-    printf("\nParabéns %s Você completou o desafio do sudoku!!\n", jogador.nome);
-    printf("Tempo gasto: %.2f segundos\n", jogador.tempoGasto);
+    // Quando todas as casas estiverem preenchidas, perguntar o que o jogador deseja fazer
+    decisaoFinal(tabuleiro, fixos);
 
-    salvarTop3Jogadores(jogador);
-    exibirLeaderboard();
+    exibirTabuleiro(tabuleiro, fixos);
+
+    if (verificarTabuleiro(tabuleiro) == 1) {
+        printf("\nParabéns %s! Você completou corretamente o desafio do Sudoku!\n", jogador.nome);
+        printf("Tempo gasto: %.2f segundos\n", jogador.tempoGasto);
+        
+        salvarTop3Jogadores(jogador);
+        exibirLeaderboard();
+    } else {
+        printf("\nSeu jogo não está correto.\n");
+        printf("Tempo gasto: %.2f segundos\n", jogador.tempoGasto);
+    }
 
     return 0;
 }
